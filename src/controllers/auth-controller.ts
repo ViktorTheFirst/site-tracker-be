@@ -1,18 +1,16 @@
 import { NextFunction, Request, Response } from 'express';
-import jwt, {
-  JsonWebTokenError,
-  JwtPayload,
-  TokenExpiredError,
-} from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
 import { Environment, Status } from '../interfaces/general';
 import HttpError from '../utils/error';
+import { UserModel } from '../models/UserModel';
+import { IUser } from '../interfaces/user';
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
-  /* try {
+  try {
     const { email, password } = req.body;
 
     // Basic field validation
@@ -24,7 +22,8 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       return next(new HttpError('Minimum password length is 6', 400));
     }
 
-    const user = await UserModel.findByEmail(email);
+    const user: IUser | null = await UserModel.findByEmail(email);
+
     if (!user || !user.password)
       return next(new HttpError('Invalid credentials', 401));
 
@@ -32,7 +31,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
     if (!match) return next(new HttpError('Invalid credentials', 401));
 
-    if (!user.status) {
+    if (user.isDisabled) {
       // User is disabled! throw an error
       return next(new HttpError('ACCOUNT_DISABLED', 403));
     }
@@ -41,7 +40,6 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       {
         id: user.id,
         email: user.email,
-        company_id: user.company_id!,
       },
       JWT_SECRET,
       {
@@ -57,35 +55,17 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
 
-
     res.status(200).json({
+      status: Status.SUCCESS,
       message: 'Login successful',
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        company_id: user.company_id,
-        role: user.role,
-      }
+      user,
     });
   } catch (err) {
     return next(new HttpError(`Login failed - ${err}`, 500));
-  } */
-};
-
-const changePassword = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    return res.json({ message: 'Password updated successfully' });
-  } catch (err) {
-    return next(new HttpError(`changePassword failed - ${err}`, 500));
   }
 };
 
-const logout = async (req: Request, res: Response, next: NextFunction) => {
+/* const logout = async (req: Request, res: Response, next: NextFunction) => {
   try {
     //Clear cookie
     res.cookie('token', '', {
@@ -136,6 +116,6 @@ const verifyFirstTimeToken = async (
       .status(500)
       .json({ status: Status.FAIL, message: 'Token verification failed' });
   }
-};
+}; */
 
-export { login, changePassword, logout, verifyFirstTimeToken };
+export { login };
