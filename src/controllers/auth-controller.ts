@@ -31,7 +31,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
     if (!match) return next(new HttpError('Invalid credentials', 401));
 
-    if (user.isDisabled) {
+    if (user.is_disabled) {
       // User is disabled! throw an error
       return next(new HttpError('ACCOUNT_DISABLED', 403));
     }

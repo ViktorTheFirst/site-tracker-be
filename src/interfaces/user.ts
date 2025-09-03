@@ -3,7 +3,7 @@ interface IUser {
   name?: string;
   email: string;
   password?: string;
-  isDisabled: boolean;
+  is_disabled: boolean;
 }
 
 export { IUser };

@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 
 import pool from '../DB/db-connect';
 import HttpError from '../utils/error';
+import { UserModel } from '../models/UserModel';
 
 const verifyAuthCookie = async (
   req: Request,
@@ -10,8 +11,7 @@ const verifyAuthCookie = async (
   next: NextFunction
 ) => {
   if (req.method === 'OPTIONS') return next();
-
-  /* const token = req.cookies?.token;
+  const token = req.cookies?.token;
 
   if (!token) {
     res.clearCookie('token');
@@ -20,8 +20,6 @@ const verifyAuthCookie = async (
     );
   }
 
-  const db = await pool.getConnection();
-  
   try {
     const decodedToken = jwt.verify(
       token,
@@ -34,13 +32,13 @@ const verifyAuthCookie = async (
       return next(new HttpError('Invalid token payload', 401));
     }
 
-    const user = await UserModel.getUserById(Number(user_id), db);
+    const user = await UserModel.getUserById(Number(user_id));
     if (!user) {
       res.clearCookie('token');
       return next(new HttpError('User not found', 401));
     }
 
-    if (!user.status) {
+    if (user.is_disabled) {
       // User is disabled! throw an error
       res.clearCookie('token');
       return next(new HttpError('ACCOUNT_DISABLED', 403));
@@ -51,8 +49,6 @@ const verifyAuthCookie = async (
       user_id: user.id,
       email: user.email,
       name: user.name,
-      company_id: Number(user.company_id),
-      role: user.role,
     };
 
     next();
@@ -60,9 +56,7 @@ const verifyAuthCookie = async (
     console.log('Auth middleware error:', err);
     res.clearCookie('token');
     return next(new HttpError('Not authorized, invalid token', 401));
-  } finally {
-    db.release()
-  } */
+  }
 };
 
 export default verifyAuthCookie;
