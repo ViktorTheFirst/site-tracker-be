@@ -1,7 +1,8 @@
-import { IUser } from '../interfaces/user';
+import { ResultSetHeader } from 'mysql2';
+
 import { logWithSeparator } from '../utils/log';
 import pool from '../DB/db-connect';
-import { ISite } from '../interfaces/site';
+import { formatDateForMySQL } from '../utils/helpers';
 
 class SiteModel {
   static async add(data: any) {
@@ -21,71 +22,47 @@ class SiteModel {
         user_id,
         email,
       } = data;
+
+      const formatedHostingValidUntil = formatDateForMySQL(hostingValiduntil);
+      const formatedDomainValidUntil = formatDateForMySQL(domainValiduntil);
       const values: any[] = [
         user_id,
         name,
         hostingProvider,
         hostingLogin,
         hostingPassword,
-        hostingValiduntil,
+        formatedHostingValidUntil,
         domainRegistrar,
         domainLogin,
         domainPassword,
-        domainValiduntil,
+        formatedDomainValidUntil,
         comments,
         status,
         email,
       ];
 
       const sql = `INSERT INTO sites(
-        creator_id, name, hosting_provider, hosting_login, hosting_password, hosting_valid_until,
-        domain_registrar, domain_login, domain_password, domain_valid_until,
-        comments, status, last_modified_by)
+        creator_id, name, hosting_provider, hosting_login, hosting_password, hosting_valid_until, domain_registrar, domain_login, domain_password, domain_valid_until, comments, status, last_modified_by)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
-      const [result, _] = (await pool.query(sql, values)) as [ISite[], any];
+      const [result, _] = (await pool.query(sql, values)) as [
+        ResultSetHeader,
+        any
+      ];
 
-      // TODO: test adding site
-      console.log('add - result', result);
-
-      /* !!result.length &&
+      !!result.affectedRows &&
         logWithSeparator(
-          `✅  User ${result[0].name} was added with id ${result[0].id}`,
+          `✅ Site ${name} with id ${result.insertId} was added to database`,
           'green'
-        ); */
+        );
 
-      return !!result.length ? result[0] : null;
+      return !!result.affectedRows ? result.insertId : null;
     } catch (err) {
-      console.warn('Error adding user to DB:', err);
+      console.warn('Error adding site to DB:', err);
       return null;
     }
   }
-
-  /* static async findByEmail(email: string) {
-    try {
-      const sql =
-        'SELECT id, name, email, password, is_disabled FROM users WHERE email = ?';
-
-      const [result, _] = (await pool.query(sql, [email])) as [IUser[], any];
-
-      return !!result.length ? result[0] : null;
-    } catch (err) {
-      console.warn('Error finding user by email:', err);
-      return null;
-    }
-  }
-
-  static async getUserById(id: number) {
-    try {
-      const sql = 'SELECT * FROM users WHERE id = $1';
-      const [result, _] = (await pool.query(sql, [id])) as [IUser[], any];
-      return result[0] || null;
-    } catch (err) {
-      console.warn('Error finding user by id:', err);
-      return null;
-    }
-  } */
 }
 
 export { SiteModel };

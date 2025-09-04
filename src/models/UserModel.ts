@@ -48,8 +48,9 @@ class UserModel {
 
   static async getUserById(id: number) {
     try {
-      const sql = 'SELECT * FROM users WHERE id = $1';
+      const sql = 'SELECT * FROM users WHERE id = ?';
       const [result, _] = (await pool.query(sql, [id])) as [IUser[], any];
+      console.log('result', result);
       return result[0] || null;
     } catch (err) {
       console.warn('Error finding user by id:', err);
