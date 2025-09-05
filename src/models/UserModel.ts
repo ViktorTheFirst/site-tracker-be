@@ -50,7 +50,6 @@ class UserModel {
     try {
       const sql = 'SELECT * FROM users WHERE id = ?';
       const [result, _] = (await pool.query(sql, [id])) as [IUser[], any];
-      console.log('result', result);
       return result[0] || null;
     } catch (err) {
       console.warn('Error finding user by id:', err);

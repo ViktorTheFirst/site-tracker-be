@@ -33,10 +33,7 @@ app.use((req: Request, res: Response, next: NextFunction): void => {
   if (origin && allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
-
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Request-Method', '*');
-  res.setHeader('Access-Control-Request-Headers', '*');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept, Authorization'
@@ -102,7 +99,7 @@ if (mode === Environment.DEV) {
 if (mode === Environment.PROD) {
   httpServer.listen(port, () => {
     logWithSeparator(
-      `💈💈 Development server started on ${port} 💈💈`,
+      `💈💈 Production server started on ${port} 💈💈`,
       'yellow'
     );
   });

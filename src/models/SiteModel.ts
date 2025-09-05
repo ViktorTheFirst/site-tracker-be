@@ -3,6 +3,7 @@ import { ResultSetHeader } from 'mysql2';
 import { logWithSeparator } from '../utils/log';
 import pool from '../DB/db-connect';
 import { formatDateForMySQL } from '../utils/helpers';
+import { ISite } from '../interfaces/site';
 
 class SiteModel {
   static async add(data: any) {
@@ -60,6 +61,25 @@ class SiteModel {
       return !!result.affectedRows ? result.insertId : null;
     } catch (err) {
       console.warn('Error adding site to DB:', err);
+      return null;
+    }
+  }
+
+  static async getById(id: number) {
+    try {
+      const sql = `SELECT * FROM sites WHERE id = ?`;
+
+      const [result, _] = (await pool.query(sql, [id])) as [ISite[], any];
+
+      !!result.length &&
+        logWithSeparator(
+          `✅ Site ${result[0].name} with id ${result[0].id} was fetched`,
+          'green'
+        );
+
+      return !!result.length ? result[0] : null;
+    } catch (err) {
+      console.warn('Error fetching site by id:', err);
       return null;
     }
   }
