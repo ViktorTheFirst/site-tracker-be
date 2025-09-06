@@ -83,6 +83,96 @@ class SiteModel {
       return null;
     }
   }
+
+  static async edit(data: any) {
+    try {
+      const {
+        id,
+        name,
+        hostingProvider,
+        hostingLogin,
+        hostingPassword,
+        hostingValiduntil,
+        domainRegistrar,
+        domainLogin,
+        domainPassword,
+        domainValiduntil,
+        comments,
+        status,
+        email,
+      } = data;
+
+      const formatedHostingValidUntil = formatDateForMySQL(hostingValiduntil);
+      const formatedDomainValidUntil = formatDateForMySQL(domainValiduntil);
+
+      const values: any[] = [
+        name,
+        hostingProvider,
+        hostingLogin,
+        hostingPassword,
+        formatedHostingValidUntil,
+        domainRegistrar,
+        domainLogin,
+        domainPassword,
+        formatedDomainValidUntil,
+        comments,
+        status,
+        email,
+        id,
+      ];
+
+      const sql = `UPDATE sites SET 
+      name = ?, 
+      hosting_provider = ?, 
+      hosting_login = ?, 
+      hosting_password = ?, 
+      hosting_valid_until = ?, 
+      domain_registrar = ?, 
+      domain_login = ?, 
+      domain_password = ?, 
+      domain_valid_until = ?, 
+      comments = ?, 
+      status = ?, 
+      last_modified_by = ?
+      WHERE id = ?
+      `;
+
+      const [result, _] = (await pool.query(sql, values)) as [
+        ResultSetHeader,
+        any
+      ];
+
+      !!result.affectedRows &&
+        logWithSeparator(
+          `✅ Site ${name} with id ${id} was updated in database`,
+          'green'
+        );
+
+      return !!result.affectedRows ? id : null;
+    } catch (err) {
+      console.warn('Error updating site in DB:', err);
+      return null;
+    }
+  }
+
+  static async getAllSites() {
+    try {
+      const sql = `SELECT * FROM sites`;
+
+      const [result, _] = (await pool.query(sql)) as [ISite[], any];
+
+      !!result.length &&
+        logWithSeparator(
+          `✅  All ${result.length} sites were fetched`,
+          'green'
+        );
+
+      return !!result.length ? result : null;
+    } catch (err) {
+      console.warn('Error fetching site by id:', err);
+      return null;
+    }
+  }
 }
 
 export { SiteModel };

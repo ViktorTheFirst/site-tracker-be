@@ -19,4 +19,11 @@ const formatDateForMySQL = (date: Date) => {
   return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
 };
 
-export { formatDateForMySQL, buildLink };
+const formatDateFromMySQL = (dateString: string | null | undefined) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return dateString;
+  return date.toLocaleDateString('en-GB'); // en-GB → dd/mm/yyyy
+};
+
+export { formatDateForMySQL, buildLink, formatDateFromMySQL };

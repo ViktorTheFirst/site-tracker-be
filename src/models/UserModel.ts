@@ -3,20 +3,21 @@ import { logWithSeparator } from '../utils/log';
 import pool from '../DB/db-connect';
 
 class UserModel {
-  static async add({ name, email, password }: IUser) {
+  static async add({ name, email, password, role }: IUser) {
     try {
       const safeUserName = name || '';
       const safePassword = password || '';
 
       const sql = `INSERT INTO users(
-        name, email, password)
-        VALUES (?, ?, ?)
+        name, email, password, role)
+        VALUES (?, ?, ?, ?)
         `;
 
       const [result, _] = (await pool.query(sql, [
         safeUserName,
         email,
         safePassword,
+        role,
       ])) as [IUser[], any];
 
       !!result.length &&
@@ -35,7 +36,7 @@ class UserModel {
   static async findByEmail(email: string) {
     try {
       const sql =
-        'SELECT id, name, email, password, is_disabled FROM users WHERE email = ?';
+        'SELECT id, name, email, password, is_disabled, role FROM users WHERE email = ?';
 
       const [result, _] = (await pool.query(sql, [email])) as [IUser[], any];
 
