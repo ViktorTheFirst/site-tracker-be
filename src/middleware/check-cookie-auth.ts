@@ -53,7 +53,6 @@ const verifyAuthCookie = async (
 
     next();
   } catch (err) {
-    console.log('Auth middleware error:', err);
     res.clearCookie('token');
     return next(new HttpError('Not authorized, invalid token', 401));
   }

@@ -37,7 +37,6 @@ const getSites = async (req: Request, res: Response, next: NextFunction) => {
       lastModifiedBy: site?.last_modified_by,
     }));
 
-    console.log('formattedSites', formattedSites);
     res.status(200).json({
       status: Status.SUCCESS,
       data: formattedSites,
@@ -111,4 +110,21 @@ const editSite = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { addSite, getSiteById, editSite, getSites };
+const removeSite = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { user_id, email } = req.userData || {};
+    const { id } = req.params;
+
+    const removeResult = await SiteModel.softRemoveSite(Number(id));
+
+    res.status(200).json({
+      status: Status.SUCCESS,
+      data: removeResult,
+      message: 'Site removed',
+    });
+  } catch (err) {
+    return next(new HttpError(`Edit site failed in BE - ${err}`, 500));
+  }
+};
+
+export { addSite, getSiteById, editSite, getSites, removeSite };

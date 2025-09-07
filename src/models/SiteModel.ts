@@ -157,7 +157,11 @@ class SiteModel {
 
   static async getAllSites() {
     try {
-      const sql = `SELECT * FROM sites`;
+      const sql = `
+      SELECT * 
+      FROM sites
+      WHERE is_removed = false
+      `;
 
       const [result, _] = (await pool.query(sql)) as [ISite[], any];
 
@@ -171,6 +175,27 @@ class SiteModel {
     } catch (err) {
       console.warn('Error fetching site by id:', err);
       return null;
+    }
+  }
+
+  static async softRemoveSite(id: number) {
+    try {
+      const sql = `
+        UPDATE sites
+        SET is_removed = true
+        WHERE id = ?
+        `;
+
+      const [result, _] = (await pool.query(sql, [id])) as [
+        ResultSetHeader,
+        any
+      ];
+
+      !!result.affectedRows &&
+        logWithSeparator(`✅  Site with id ${id} was soft removed`, 'green');
+      return !!result.affectedRows ? id : null;
+    } catch (err) {
+      console.warn('Error removing site in DB ', err);
     }
   }
 }
