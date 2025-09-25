@@ -6,7 +6,7 @@ import { createServer } from 'http';
 import 'dotenv/config';
 
 import { logWithSeparator } from './utils/log';
-import { authRoutes, siteRoutes } from './routes';
+import { authRoutes, siteRoutes, userRoutes } from './routes';
 import { Environment } from './interfaces/general';
 import HttpError from './utils/error';
 
@@ -57,6 +57,7 @@ app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 // Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/site', siteRoutes);
+app.use('/api/v1/user', userRoutes);
 
 // Wild route
 app.use('/', async (req: Request, res: Response) => {

@@ -1,16 +1,25 @@
 import { IUser } from '../interfaces/user';
 import { logWithSeparator } from '../utils/log';
 import pool from '../DB/db-connect';
+import { Status } from '../interfaces/general';
 
 class UserModel {
-  static async add({ name, email, password, role }: IUser) {
+  static async add({
+    name,
+    email,
+    password,
+    role,
+    allowedSiteIds,
+    status,
+  }: IUser) {
     try {
       const safeUserName = name || '';
       const safePassword = password || '';
+      const safeAllowedSiteIds = JSON.stringify(allowedSiteIds);
 
       const sql = `INSERT INTO users(
-        name, email, password, role)
-        VALUES (?, ?, ?, ?)
+        name, email, password, role, status, allowed_site_ids)
+        VALUES (?, ?, ?, ?, ?, ?)
         `;
 
       const [result, _] = (await pool.query(sql, [
@@ -18,6 +27,8 @@ class UserModel {
         email,
         safePassword,
         role,
+        status,
+        safeAllowedSiteIds,
       ])) as [IUser[], any];
 
       !!result.length &&
@@ -26,8 +37,18 @@ class UserModel {
           'green'
         );
 
-      return !!result.length ? result[0] : null;
-    } catch (err) {
+      return !!result.length
+        ? { status: Status.SUCCESS, id: result[0].id }
+        : null;
+    } catch (err: any) {
+      // Detect duplicate email case
+      if (err.code === 'ER_DUP_ENTRY') {
+        return {
+          status: Status.FAIL,
+          message: `A user with email ${email} already exists.`,
+        };
+      }
+
       console.warn('Error adding user to DB:', err);
       return null;
     }
@@ -35,8 +56,7 @@ class UserModel {
 
   static async findByEmail(email: string) {
     try {
-      const sql =
-        'SELECT id, name, email, password, is_disabled, role FROM users WHERE email = ?';
+      const sql = 'SELECT * FROM users WHERE email = ?';
 
       const [result, _] = (await pool.query(sql, [email])) as [IUser[], any];
 

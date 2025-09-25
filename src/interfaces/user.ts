@@ -3,6 +3,12 @@ enum Role {
   AMIM = 'admin',
   DEV_ADMIN = 'dev-admin',
 }
+
+enum UserStatus {
+  INVITED = 'invited',
+  CANCELED = 'canceled',
+  ACCEPTED = 'accepted',
+}
 interface IUser {
   id?: number;
   name?: string;
@@ -10,6 +16,8 @@ interface IUser {
   password?: string;
   is_disabled: boolean;
   role: Role;
+  allowedSiteIds: number[];
+  status: UserStatus;
 }
 
-export { IUser };
+export { IUser, UserStatus, Role };

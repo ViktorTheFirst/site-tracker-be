@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 import { Environment, Status } from '../interfaces/general';
 import HttpError from '../utils/error';
 import { UserModel } from '../models/UserModel';
-import { IUser } from '../interfaces/user';
+import { IUser, UserStatus } from '../interfaces/user';
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -31,7 +31,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
     if (!match) return next(new HttpError('Invalid credentials', 401));
 
-    if (user.is_disabled) {
+    if (user.is_disabled || user.status !== UserStatus.ACCEPTED) {
       // User is disabled! throw an error
       return next(new HttpError('ACCOUNT_DISABLED', 403));
     }
