@@ -1,15 +1,11 @@
 import { Router } from 'express';
 
-import {
-  login,
-  /* logout,
-  verifyFirstTimeToken, */
-} from '../controllers/auth-controller';
+import { login, logout } from '../controllers/auth-controller';
 
 const router = Router();
 
 router.post('/login', login);
 
-/* router.post('/logout', logout); */
+router.post('/logout', logout);
 
 export default router;

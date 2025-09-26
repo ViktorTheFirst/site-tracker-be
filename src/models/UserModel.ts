@@ -2,6 +2,7 @@ import { IUser } from '../interfaces/user';
 import { logWithSeparator } from '../utils/log';
 import pool from '../DB/db-connect';
 import { Status } from '../interfaces/general';
+import { ResultSetHeader } from 'mysql2';
 
 class UserModel {
   static async add({
@@ -22,35 +23,39 @@ class UserModel {
         VALUES (?, ?, ?, ?, ?, ?)
         `;
 
-      const [result, _] = (await pool.query(sql, [
+      const [result, _] = await pool.query<ResultSetHeader>(sql, [
         safeUserName,
         email,
         safePassword,
         role,
         status,
         safeAllowedSiteIds,
-      ])) as [IUser[], any];
+      ]);
 
-      !!result.length &&
-        logWithSeparator(
-          `✅  User ${result[0].name} was added with id ${result[0].id}`,
-          'green'
-        );
+      const insertedId = result?.insertId;
 
-      return !!result.length
-        ? { status: Status.SUCCESS, id: result[0].id }
-        : null;
+      !!insertedId &&
+        logWithSeparator(`✅  User with id ${insertedId} was added.`, 'green');
+
+      return !!insertedId
+        ? { status: Status.SUCCESS, id: insertedId, message: 'User added.' }
+        : { status: Status.FAIL, id: null, message: 'User was not added.' };
     } catch (err: any) {
       // Detect duplicate email case
       if (err.code === 'ER_DUP_ENTRY') {
         return {
           status: Status.FAIL,
           message: `A user with email ${email} already exists.`,
+          id: null,
         };
       }
 
       console.warn('Error adding user to DB:', err);
-      return null;
+      return {
+        status: Status.FAIL,
+        message: `Error adding user to DB`,
+        id: null,
+      };
     }
   }
 

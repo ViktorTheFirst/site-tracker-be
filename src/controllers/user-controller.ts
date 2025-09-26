@@ -5,6 +5,7 @@ import { Status } from '../interfaces/general';
 import HttpError from '../utils/error';
 import { UserModel } from '../models/UserModel';
 import { Role, UserStatus } from '../interfaces/user';
+import sendEmail from '../services/email';
 
 const defaultPassword = process.env.DEFAULT_PASSWORD!;
 
@@ -14,7 +15,6 @@ const inviteUser = async (req: Request, res: Response, next: NextFunction) => {
     const { email, allowedSiteIds } = req.body;
 
     const hashedPassword = await bcrypt.hash(defaultPassword, 10);
-    // TODO: add user to DB
 
     const addResult = await UserModel.add({
       password: hashedPassword,
@@ -28,14 +28,16 @@ const inviteUser = async (req: Request, res: Response, next: NextFunction) => {
 
     if (addResult && addResult.status === Status.FAIL) {
       res.status(400).json({
-        status: addResult.status,
-        id: null,
-        message: addResult.message,
+        addResult,
       });
       return;
     }
 
-    // TODO: send email to the user
+    await sendEmail(
+      email,
+      'Initation to SiteTracker',
+      'TODO: put here link to SiteTracker for the new user to login'
+    );
 
     res.status(201).json({
       status: Status.SUCCESS,

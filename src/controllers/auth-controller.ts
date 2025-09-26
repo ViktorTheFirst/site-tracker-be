@@ -6,6 +6,7 @@ import { Environment, Status } from '../interfaces/general';
 import HttpError from '../utils/error';
 import { UserModel } from '../models/UserModel';
 import { IUser, UserStatus } from '../interfaces/user';
+import { logWithSeparator } from '../utils/log';
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -65,7 +66,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-/* const logout = async (req: Request, res: Response, next: NextFunction) => {
+const logout = async (req: Request, res: Response, next: NextFunction) => {
   try {
     //Clear cookie
     res.cookie('token', '', {
@@ -73,11 +74,14 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       secure: true,
       expires: new Date(0),
     });
-    res.json({ message: 'Logged out successfully' });
+    logWithSeparator(`User was logged out`);
+    res.json({ status: Status.SUCCESS, message: 'Logged out successfully' });
   } catch (err) {
-    return next(new HttpError(`logout failed - ${err}`, 500));
+    return next(new HttpError(`logout failed on BE - ${err}`, 500));
   }
 };
+
+/*
 
 const verifyFirstTimeToken = async (
   req: Request,
@@ -118,4 +122,4 @@ const verifyFirstTimeToken = async (
   }
 }; */
 
-export { login };
+export { login, logout };
