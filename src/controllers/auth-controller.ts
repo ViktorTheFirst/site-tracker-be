@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 import { Environment, Status } from '../interfaces/general';
 import HttpError from '../utils/error';
 import { UserModel } from '../models/UserModel';
-import { IUser, UserStatus } from '../interfaces/user';
+import { UserStatus } from '../interfaces/user';
 import { logWithSeparator } from '../utils/log';
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -23,7 +23,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       return next(new HttpError('Minimum password length is 6', 400));
     }
 
-    const user: IUser | null = await UserModel.findByEmail(email);
+    const user = await UserModel.findByEmail(email);
 
     if (!user || !user.password)
       return next(new HttpError('Invalid credentials', 401));

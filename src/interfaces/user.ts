@@ -14,7 +14,8 @@ interface IUser {
   name?: string;
   email: string;
   password?: string;
-  is_disabled: boolean;
+  createdAt?: string;
+  isDisabled: boolean;
   role: Role;
   allowedSiteIds: number[];
   status: UserStatus;

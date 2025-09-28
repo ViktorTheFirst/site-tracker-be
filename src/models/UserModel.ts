@@ -5,6 +5,28 @@ import { Status } from '../interfaces/general';
 import { ResultSetHeader } from 'mysql2';
 
 class UserModel {
+  static async get() {
+    try {
+      const sql = `
+      SELECT * 
+      FROM users
+      `;
+
+      const [result, _] = await pool.query<any[]>(sql);
+
+      !!result.length &&
+        logWithSeparator(
+          `✅  All ${result.length} users were fetched`,
+          'green'
+        );
+
+      return !!result.length ? result : null;
+    } catch (err) {
+      console.warn('Error fetching users:', err);
+      return null;
+    }
+  }
+
   static async add({
     name,
     email,
@@ -63,7 +85,7 @@ class UserModel {
     try {
       const sql = 'SELECT * FROM users WHERE email = ?';
 
-      const [result, _] = (await pool.query(sql, [email])) as [IUser[], any];
+      const [result, _] = (await pool.query(sql, [email])) as any;
 
       return !!result.length ? result[0] : null;
     } catch (err) {
@@ -75,7 +97,7 @@ class UserModel {
   static async getUserById(id: number) {
     try {
       const sql = 'SELECT * FROM users WHERE id = ?';
-      const [result, _] = (await pool.query(sql, [id])) as [IUser[], any];
+      const [result, _] = (await pool.query(sql, [id])) as any;
       return result[0] || null;
     } catch (err) {
       console.warn('Error finding user by id:', err);

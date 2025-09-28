@@ -1,9 +1,11 @@
 import { Router } from 'express';
 
-import { inviteUser } from '../controllers/user-controller';
+import { getAllUsers, inviteUser } from '../controllers/user-controller';
 import verifyAuthCookie from '../middleware/check-cookie-auth';
 
 const router = Router();
+
+router.get('/', /* verifyAuthCookie, */ getAllUsers);
 
 router.post('/invite', verifyAuthCookie, inviteUser);
 
