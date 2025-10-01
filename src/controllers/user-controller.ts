@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
 import { Status } from '../interfaces/general';
@@ -6,20 +7,22 @@ import HttpError from '../utils/error';
 import { UserModel } from '../models/UserModel';
 import { IUser, Role, UserStatus } from '../interfaces/user';
 import sendEmail from '../services/email';
-import { formatDateFromMySQL } from '../utils/helpers';
+import { buildLink, formatDateFromMySQL } from '../utils/helpers';
+import { LinkPath } from '../utils/constants';
 
-const defaultPassword = process.env.DEFAULT_PASSWORD!;
+const DEFAULT_PASS = process.env.DEFAULT_PASSWORD!;
+const JWT_SECRET = process.env.JWT_SECRET as string;
 
 const inviteUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { user_id } = req.userData || {};
-    const { email, allowedSiteIds } = req.body;
+    const { emails, allowedSiteIds } = req.body;
 
-    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+    const hashedPassword = await bcrypt.hash(DEFAULT_PASS, 10);
 
     const addResult = await UserModel.add({
       password: hashedPassword,
-      email,
+      email: emails[0],
       isDisabled: false,
       role: Role.USER,
       status: UserStatus.INVITED,
@@ -32,10 +35,18 @@ const inviteUser = async (req: Request, res: Response, next: NextFunction) => {
       return;
     }
 
+    const token = jwt.sign({ email: emails[0], role: Role.USER }, JWT_SECRET, {
+      expiresIn: '24h',
+    });
+
+    const link = buildLink(LinkPath.FirstTimeSetup, token);
+
+    console.log('link', link);
+
     await sendEmail(
-      email,
+      emails[0],
       'Initation to SiteTracker',
-      'TODO: put here link to SiteTracker for the new user to login'
+      `To complete your registration please procceed to this link: ${link}`
     );
 
     res.status(201).json({
@@ -80,4 +91,39 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { inviteUser, getAllUsers };
+const editUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { user_id, email } = req.userData || {};
+    const { name, password, email: userEmail, firstTimeSetup } = req.body;
+
+    const existingUser = await UserModel.findByEmail(userEmail);
+
+    if (!existingUser || !existingUser.id)
+      return next(new HttpError('Error while finishing user setup', 401));
+
+    const status = firstTimeSetup ? UserStatus.ACCEPTED : existingUser.status;
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    const editResult = await UserModel.edit(
+      existingUser.id,
+      name,
+      hashed,
+      status
+    );
+
+    if (!editResult) {
+      res.json({ status: Status.FAIL, message: 'User edit failed' });
+      return;
+    }
+
+    res.status(200).json({
+      status: Status.SUCCESS,
+      message: 'User edited',
+    });
+  } catch (err) {
+    return next(new HttpError(`Edit user failed in BE - ${err}`, 500));
+  }
+};
+
+export { inviteUser, getAllUsers, editUser };

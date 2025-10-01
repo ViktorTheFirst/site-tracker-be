@@ -1,5 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, {
+  JsonWebTokenError,
+  JwtPayload,
+  TokenExpiredError,
+} from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
 import { Environment, Status } from '../interfaces/general';
@@ -81,8 +85,6 @@ const logout = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-/*
-
 const verifyFirstTimeToken = async (
   req: Request,
   res: Response,
@@ -104,6 +106,9 @@ const verifyFirstTimeToken = async (
       process.env.JWT_SECRET as string
     ) as JwtPayload;
 
+    decodedToken &&
+      logWithSeparator(`Token was just verified ${token}`, 'green');
+
     res.json({ status: Status.SUCCESS, ...decodedToken });
   } catch (err) {
     if (err instanceof TokenExpiredError) {
@@ -120,6 +125,6 @@ const verifyFirstTimeToken = async (
       .status(500)
       .json({ status: Status.FAIL, message: 'Token verification failed' });
   }
-}; */
+};
 
-export { login, logout };
+export { login, logout, verifyFirstTimeToken };

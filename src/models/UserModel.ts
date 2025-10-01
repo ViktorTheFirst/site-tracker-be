@@ -1,4 +1,4 @@
-import { IUser } from '../interfaces/user';
+import { IUser, UserStatus } from '../interfaces/user';
 import { logWithSeparator } from '../utils/log';
 import pool from '../DB/db-connect';
 import { Status } from '../interfaces/general';
@@ -101,6 +101,37 @@ class UserModel {
       return result[0] || null;
     } catch (err) {
       console.warn('Error finding user by id:', err);
+      return null;
+    }
+  }
+
+  static async edit(
+    id: number,
+    name: string,
+    password: string,
+    status: UserStatus
+  ) {
+    try {
+      const sql = `UPDATE users SET 
+      name = ?, 
+      password = ?,
+      status = ?
+      WHERE id = ?
+      `;
+
+      const [result, _] = (await pool.query(sql, [
+        name,
+        password,
+        status,
+        id,
+      ])) as [ResultSetHeader, any];
+
+      !!result.affectedRows &&
+        logWithSeparator(`✅ User ${name} was updated in database`, 'green');
+
+      return !!result.affectedRows ? true : null;
+    } catch (err) {
+      console.warn('Error updating site in DB:', err);
       return null;
     }
   }

@@ -1,7 +1,20 @@
-const buildLink = (token: string): string => {
-  const link = `${process.env.ADMIN_DEV_URL}?token=${token}`;
+import { Environment } from '../interfaces/general';
 
-  return link;
+const buildLink = (path: string, token: string): string => {
+  console.log('process.env.NODE_ENV', process.env.NODE_ENV);
+  switch (process.env.NODE_ENV) {
+    case Environment.DEV:
+      return `${process.env.ADMIN_DEV_URL}/${path}?token=${token}`;
+
+    case Environment.STAGING:
+      return `${process.env.ADMIN_STAGING_URL}/${path}?token=${token}`;
+
+    case Environment.PROD:
+      return `${process.env.ADMIN_PROD_URL}/${path}?token=${token}`;
+
+    default:
+      return `${process.env.ADMIN_DEV_URL}/${path}?token=${token}`;
+  }
 };
 
 const formatDateForMySQL = (date: Date) => {
