@@ -28,7 +28,6 @@ const inviteUser = async (req: Request, res: Response, next: NextFunction) => {
       status: UserStatus.INVITED,
       allowedSiteIds,
     });
-    console.log('INVITE USER addResult', addResult);
 
     if (addResult && addResult.status === Status.FAIL) {
       res.status(400).json(addResult);
@@ -94,22 +93,42 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
 const editUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { user_id, email } = req.userData || {};
-    const { name, password, email: userEmail, firstTimeSetup } = req.body;
+    const {
+      name,
+      password,
+      email: userEmail,
+      allowedSiteIds,
+      activity,
+      firstTimeSetup,
+    } = req.body;
 
     const existingUser = await UserModel.findByEmail(userEmail);
 
     if (!existingUser || !existingUser.id)
       return next(new HttpError('Error while finishing user setup', 401));
 
-    const status = firstTimeSetup ? UserStatus.ACCEPTED : existingUser.status;
+    const safeName = !!name?.length ? name : existingUser?.name;
 
-    const hashed = await bcrypt.hash(password, 10);
+    const safeStatus = firstTimeSetup
+      ? UserStatus.ACCEPTED
+      : existingUser.status;
+
+    const safeAllowedSiteIds = !!allowedSiteIds?.length
+      ? allowedSiteIds
+      : existingUser?.allowed_site_ids;
+
+    const hashed = password
+      ? await bcrypt.hash(password, 10)
+      : existingUser?.password;
 
     const editResult = await UserModel.edit(
       existingUser.id,
-      name,
+      safeName,
+      userEmail,
       hashed,
-      status
+      safeStatus,
+      safeAllowedSiteIds,
+      activity
     );
 
     if (!editResult) {

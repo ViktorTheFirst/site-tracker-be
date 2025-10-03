@@ -108,21 +108,31 @@ class UserModel {
   static async edit(
     id: number,
     name: string,
+    email: string,
     password: string,
-    status: UserStatus
+    status: UserStatus,
+    allowedSiteIds: number[],
+    activity: boolean
   ) {
     try {
-      const sql = `UPDATE users SET 
+      const sql = `
+      UPDATE users SET 
       name = ?, 
+      email = ?,
       password = ?,
-      status = ?
+      status = ?,
+      allowed_site_ids = ?,
+      is_disabled = ?
       WHERE id = ?
       `;
 
       const [result, _] = (await pool.query(sql, [
         name,
+        email,
         password,
         status,
+        JSON.stringify(allowedSiteIds),
+        activity,
         id,
       ])) as [ResultSetHeader, any];
 
