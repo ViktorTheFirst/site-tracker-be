@@ -11,6 +11,7 @@
     "build": "tsc",
     "start": "cross-env NODE_ENV=production ts-node src/app.ts",
     "dev": "cross-env NODE_ENV=development nodemon --watch src --exec ts-node src/app.ts",
+    "staging": "cross-env NODE_ENV=staging ts-node src/app.ts",
     "prod": "npm run build && npm run start"
   },
   "author": "Viktor Stepanenco",

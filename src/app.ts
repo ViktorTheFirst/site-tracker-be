@@ -97,6 +97,12 @@ if (mode === Environment.DEV) {
   });
 }
 
+if (mode === Environment.STAGING) {
+  httpServer.listen(port, () => {
+    logWithSeparator(`💈💈 Staging server started on ${port} 💈💈`, 'yellow');
+  });
+}
+
 if (mode === Environment.PROD) {
   httpServer.listen(port, () => {
     logWithSeparator(
