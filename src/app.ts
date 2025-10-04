@@ -26,6 +26,7 @@ app.use((req: Request, res: Response, next: NextFunction): void => {
     'http://localhost:4173',
     'http://localhost:5174',
     'http://localhost:4174',
+    'https://site-tracker.viktor-indie.com',
   ];
 
   res.setHeader('Vary', 'Origin');
