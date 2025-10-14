@@ -4,14 +4,24 @@ import { Status } from '../interfaces/general';
 import HttpError from '../utils/error';
 import { SiteModel } from '../models/SiteModel';
 import { formatDateFromMySQL } from '../utils/helpers';
+import { UserModel } from '../models/UserModel';
+import { Role } from '../interfaces/user';
 
 const getSites = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { user_id, email } = req.userData || {};
 
-    // TODO: check if user is admin or dev admin
+    const user = await UserModel.getUserById(user_id);
 
-    const sites = await SiteModel.getAllSites();
+    let sites = null;
+
+    if (user?.role === Role.USER) {
+      sites = await SiteModel.getAllowedSites(user?.allowed_site_ids);
+    }
+
+    if (user?.role !== Role.USER) {
+      sites = await SiteModel.getAllSites();
+    }
 
     if (!sites) {
       return res.json({
@@ -82,11 +92,25 @@ const addSite = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { user_id, email } = req.userData || {};
 
-    const addResult = await SiteModel.add({ ...req.body, user_id, email });
+    const addResultId = await SiteModel.add({ ...req.body, user_id, email });
+
+    const user = await UserModel.getUserById(user_id);
+
+    const editResult = await UserModel.edit(
+      user_id,
+      user.name,
+      email,
+      user.password,
+      user.status,
+      [...user.allowed_site_ids, addResultId],
+      user.is_disabled
+    );
+
+    console.log('editResult in addSite', editResult);
 
     res.status(200).json({
       status: Status.SUCCESS,
-      id: addResult,
+      id: addResultId,
       message: 'Site added',
     });
   } catch (err) {

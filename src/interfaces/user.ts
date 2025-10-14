@@ -1,6 +1,6 @@
 enum Role {
   USER = 'user',
-  AMIM = 'admin',
+  ADMIN = 'admin',
   DEV_ADMIN = 'dev-admin',
 }
 

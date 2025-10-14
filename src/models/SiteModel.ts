@@ -178,6 +178,30 @@ class SiteModel {
     }
   }
 
+  static async getAllowedSites(allowedIds: number[]) {
+    try {
+      const sql = `
+      SELECT * 
+      FROM sites
+      WHERE is_removed = false
+      AND id IN (${allowedIds.join(',')})
+      `;
+
+      const [result, _] = (await pool.query(sql)) as [ISite[], any];
+
+      !!result.length &&
+        logWithSeparator(
+          `✅  All ${result.length} allowed sites were fetched`,
+          'green'
+        );
+
+      return !!result.length ? result : null;
+    } catch (err) {
+      console.warn('Error fetching allowed sites:', err);
+      return null;
+    }
+  }
+
   static async softRemoveSite(id: number) {
     try {
       const sql = `
